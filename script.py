@@ -1,6 +1,7 @@
 import urllib.request
 from bs4 import BeautifulSoup
 import re
+import math
 
 
 def getSoup(url):
@@ -34,16 +35,37 @@ def getWordListUrls(soup):
 			
 			# append list data to urls list and return for next step
 			wordLists.append([url, title, count])
-	print(wordLists)
-
+#	print(wordLists)
+	return wordLists
+	
+	
+def getWords(wordLists):
+	allWords = []
+	for wordList in wordLists:
+		allWords.append('#' + wordList[1])
+		pageNum = math.ceil(wordList[2] / 20)
+		for i in range(1, pageNum+1):
+			soup = getSoup(wordList[0] + '?page=' + str(i))
+			wordRows = soup.table.find_all('tr')
+			for wordRow in wordRows:
+				allWords.append(wordRow.strong.string)
+	return allWords
 		
+
+
+def writeTxt(words):
+	with open('list.txt', 'w') as f:
+		for word in words:
+			f.write(word + '\n')	
 		
 	
 
 def main():
-	url = 'https://www.shanbay.com/wordbook/102106/'
+	url = 'https://www.shanbay.com/wordbook/1576/'
 	soup = getSoup(url)
-	getWordListUrls(soup)
+	wordLists = getWordListUrls(soup)
+	allWords = getWords(wordLists)
+	writeTxt(allWords)
 	
 main()
 	
